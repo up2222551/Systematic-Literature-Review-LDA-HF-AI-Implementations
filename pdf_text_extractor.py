@@ -13,8 +13,8 @@ def extract_text_from_pdf(pdf_path):
         return text
 
 def main():
-    pdf_directory = '/Users/andy/Documents/Test PDFs (Python Input)'  
-    output_directory = '/Users/andy/Documents/Test PDFs (Python Output)' 
+    pdf_directory = '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/1 pdf input'  
+    output_directory = '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/2 text output' 
 
     for filename in os.listdir(pdf_directory):
         if filename.endswith('.pdf'):
