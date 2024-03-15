@@ -48,7 +48,7 @@ def process_files(input_folder, output_folder):
         print(f"Processed and saved: {output_file_path}")
 
 # Set your input and output folders
-input_folder = '/Users/andy/Documents/Test PDFs (Pre-Process Output)'
-output_folder = '/Users/andy/Documents/Test PDFs (Processed Output)'
+input_folder = '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/2 text output'
+output_folder = '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/3 processed output'
 
 process_files(input_folder, output_folder)
