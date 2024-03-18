@@ -1,9 +1,10 @@
 import os
 import nltk
 from nltk.corpus import words
+import re
 
-# Download necessary NLTK data
-nltk.download('words')
+# Ensure necessary NLTK data is downloaded
+nltk.download('words', quiet=True)
 
 english_vocab = set(words.words())
 
@@ -11,6 +12,10 @@ def is_valid_word(word):
     return word in english_vocab
 
 def merge_artefacts(text):
+    """
+    Merge adjacent words if their concatenation forms a valid word,
+    and remove standalone non-words.
+    """
     words = text.split()
     i = 0
     while i < len(words) - 1:
@@ -26,50 +31,48 @@ def merge_artefacts(text):
     return ' '.join(words)
 
 def process_files(input_folder, output_folder):
-    # Ensure output directory exists
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
-    
-    files_with_decode_errors = []  # List to keep track of files with decode errors
 
-    # Process each file in the input directory
+    files_with_decode_errors = []
+
     for filename in os.listdir(input_folder):
+        if not filename.endswith('.txt'):  # Skip non-txt files
+            continue
+        
         file_path = os.path.join(input_folder, filename)
         
-        # Read the content of the file, ignoring undecodable characters
         try:
             with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
                 text = file.read()
+
+            # Detect end of metadata to process only the content
+            metadata_end_index = text.find('---METADATA END---')
+            if metadata_end_index != -1:
+                content = text[metadata_end_index + len('---METADATA END---'):].strip()
+            else:
+                content = text  # Process the entire text if no metadata end marker is found
+            
+            processed_content = merge_artefacts(content)
+
+            output_file_path = os.path.join(output_folder, filename)
+            with open(output_file_path, 'w', encoding='utf-8') as file:
+                file.write(processed_content)
+
+            print(f"Processed and saved: {output_file_path}")
         except Exception as e:
-            print(f"Error reading {filename}: {e}")
-            continue
-
-        # Check if any characters were ignored - this is a simple heuristic
-        if '\ufffd' in text:
             files_with_decode_errors.append(filename)
+            print(f"Error processing {filename}: {e}")
 
-        # Ignore metadata
-        content_start = text.find('---METADATA END---')
-        if content_start != -1:
-            text = text[content_start + len('---METADATA END---'):].strip()
-
-        # Process the text
-        processed_text = merge_artefacts(text)
-
-        # Save the processed text in the output directory
-        output_file_path = os.path.join(output_folder, 'processed_' + filename)
-        with open(output_file_path, 'w', encoding='utf-8') as file:
-            file.write(processed_text)
-        print(f"Processed and saved: {output_file_path}")
-
-    # Report any files that had undecodable characters
+    # Report any files that had issues
     if files_with_decode_errors:
-        print("Files with undecodable characters (processed with ignored characters):")
-        for file in files_with_decode_errors:
-            print(file)
-        
+        print("Files with processing errors:")
+        for err_file in files_with_decode_errors:
+            print(err_file)
+
 # Set your input and output folders
 input_folder = '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/2 text output'
 output_folder = '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/3 processed output'
 
 process_files(input_folder, output_folder)
+
