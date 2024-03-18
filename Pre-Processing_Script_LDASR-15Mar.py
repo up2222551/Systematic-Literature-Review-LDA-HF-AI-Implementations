@@ -29,24 +29,45 @@ def process_files(input_folder, output_folder):
     # Ensure output directory exists
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
+    
+    files_with_decode_errors = []  # List to keep track of files with decode errors
 
     # Process each file in the input directory
     for filename in os.listdir(input_folder):
         file_path = os.path.join(input_folder, filename)
         
-        # Read the content of the file
-        with open(file_path, 'r') as file:
-            text = file.read()
+        # Read the content of the file, ignoring undecodable characters
+        try:
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
+                text = file.read()
+        except Exception as e:
+            print(f"Error reading {filename}: {e}")
+            continue
+
+        # Check if any characters were ignored - this is a simple heuristic
+        if '\ufffd' in text:
+            files_with_decode_errors.append(filename)
+
+        # Ignore metadata
+        content_start = text.find('---METADATA END---')
+        if content_start != -1:
+            text = text[content_start + len('---METADATA END---'):].strip()
 
         # Process the text
         processed_text = merge_artefacts(text)
 
         # Save the processed text in the output directory
         output_file_path = os.path.join(output_folder, 'processed_' + filename)
-        with open(output_file_path, 'w') as file:
+        with open(output_file_path, 'w', encoding='utf-8') as file:
             file.write(processed_text)
         print(f"Processed and saved: {output_file_path}")
 
+    # Report any files that had undecodable characters
+    if files_with_decode_errors:
+        print("Files with undecodable characters (processed with ignored characters):")
+        for file in files_with_decode_errors:
+            print(file)
+        
 # Set your input and output folders
 input_folder = '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/2 text output'
 output_folder = '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/3 processed output'
