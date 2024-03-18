@@ -1,17 +1,3 @@
-import csv
-import os
-import re
-from PyPDF2 import PdfReader
-
-def find_doi_in_text(text):
-    """
-    Searches the extracted text for DOIs using regular expressions and returns the first match found.
-    """
-    # Regular expression to match both DOI formats
-    doi_regex = r'\b(?:https?://doi\.org/|doi:)(10\.\d{4,9}/[-._;()/:A-Za-z0-9]+)\b'
-    match = re.search(doi_regex, text)
-    return match.group(1) if match else 'Unknown'
-
 def extract_and_standardize_metadata(pdf_path, text):
     """
     Extracts and standardizes metadata from a given PDF file and extracted text.
@@ -19,11 +5,14 @@ def extract_and_standardize_metadata(pdf_path, text):
     with open(pdf_path, 'rb') as file:
         reader = PdfReader(file)
         raw_metadata = reader.metadata
-        year = raw_metadata.get('/CreationDate', 'Unknown')[2:6] if '/CreationDate' in raw_metadata else 'Unknown'
         standardized_metadata = {
             'Title': raw_metadata.get('/Title', 'Unknown').replace('/', '-'),
             'Author': raw_metadata.get('/Author', 'Unknown').replace('/', '-'),
-            'Year': year,
+            'Keywords': raw_metadata.get('/Keywords', 'Unknown').replace('/', '-'),
+            'CreationDate': raw_metadata.get('/CreationDate', 'Unknown')[2:10] if '/CreationDate' in raw_metadata else 'Unknown',
+            'ModDate': raw_metadata.get('/ModDate', 'Unknown')[2:10] if '/ModDate' in raw_metadata else 'Unknown',
+            'Description': raw_metadata.get('/Subject', 'Unknown').replace('/', '-'),  # Assuming 'Description' is stored in '/Subject'
+            'Year': raw_metadata.get('/CreationDate', 'Unknown')[2:6] if '/CreationDate' in raw_metadata else 'Unknown',
             'DOI': find_doi_in_text(text)
         }
         return standardized_metadata
@@ -53,7 +42,8 @@ def main():
     csv_file_path = os.path.join(output_directory, 'metadata_summary.csv')
 
     with open(csv_file_path, 'w', newline='', encoding='utf-8') as csv_file:
-        fieldnames = ['Serial Number', 'Title', 'Author', 'Year', 'DOI', 'Original PDF Name']
+        # Updated field names to include additional metadata fields
+        fieldnames = ['Serial Number', 'Title', 'Author', 'Year', 'DOI', 'Keywords', 'Created', 'Modified', 'Description', 'Original PDF Name']
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()
 
@@ -68,16 +58,26 @@ def main():
                 # Generate output filename
                 output_filename = generate_output_filename(serial_number, metadata)
                 output_path = os.path.join(output_directory, output_filename)
+                
+   # Open the output file and write metadata, marker, and text
                 with open(output_path, 'w', encoding='utf-8') as text_file:
+                    metadata_text = f"Title: {metadata['Title']}\nAuthor: {metadata['Author']}\nYear: {metadata['Year']}\nDOI: {metadata['DOI']}\nKeywords: {metadata['Keywords']}\nCreated: {metadata['CreationDate']}\nModified: {metadata['ModDate']}"
+                    text_file.write(metadata_text)
+                    # Include the '---METADATA END---' marker
+                    text_file.write("\n\n---METADATA END---\n\n")
                     text_file.write(text)
                 
-                # Write metadata to CSV
+                # Write extended metadata to CSV, including 'Description'
                 writer.writerow({
                     'Serial Number': serial_number,
                     'Title': metadata['Title'],
                     'Author': metadata['Author'],
                     'Year': metadata['Year'],
                     'DOI': metadata['DOI'],
+                    'Keywords': metadata['Keywords'],
+                    'Created': metadata['CreationDate'],
+                    'Modified': metadata['ModDate'],
+                    'Description': metadata['Description'],  # Only included in CSV
                     'Original PDF Name': pdf_file
                 })
 
@@ -86,3 +86,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
