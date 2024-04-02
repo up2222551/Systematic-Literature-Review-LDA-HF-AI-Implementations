@@ -20,6 +20,21 @@ library(kableExtra)
 library(doParallel)
 ```
 
+# Custom function to process PDFs and handle locked files
+process_pdf_and_log <- function(file_path) {
+  full_path <- file.path("C:/Users/andyw/Documents/R/Dataset", file_path)
+  cat("Attempting to process file:", file_path, "\n") # Optional: log every attempt
+  tryCatch({
+    # Attempt to read the PDF text
+    text <- pdf_text(full_path)
+    return(text)
+  }, error = function(e) {
+    # Log the filename of the PDF that caused an error
+    cat("Ignored locked or inaccessible file:", file_path, "\n")
+    return(NULL) # Return NULL to skip this file
+  })
+}
+
 #Get and load PDF's
 ```{r}
 files <- list.files(path = "C:/Users/andyw/Documents/R/Dataset", pattern = "pdf$", include.dirs = TRUE)
@@ -83,6 +98,12 @@ dtm <- removeSparseTerms(dtm,0.99)
 #Alternative way to check words for several documents:
 inspect(dtm[1:5,500:510])
 ```
+
+# Use the custom function for processing
+documents <- lapply(files, process_pdf_and_log)
+
+# Filter out NULLs returned for ignored files
+documents <- documents[!sapply(documents, is.null)]
 
 #Run LDA
 ```{r}
