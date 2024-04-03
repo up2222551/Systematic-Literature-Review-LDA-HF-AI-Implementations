@@ -84,7 +84,7 @@ myStopwords <- c("can", "say","one","way","use",
 "enough","far","earli","away","achiev","draw",
 "last","never","brief","bit","entir","brief",
 "great","lot","fig", "let", "follow", "ptrn
-", "aalborg", "universitet", "�???o", "proufbt", "ufbrm", "eufbect", "diufber", "ufbrst", "deufbn", "speciufbc", "signiufbc", "ufbnd", "�???", "firm�???T", "�???o", "vol", "thern", "ofrn", "journal", "tion", "andrn", "octob" )
+", "aalborg", "universitet", "proufbt", "ufbrm", "eufbect", "diufber", "ufbrst", "deufbn", "speciufbc", "signiufbc", "ufbnd",  "vol", "thern", "ofrn", "journal", "tion", "andrn", "octob" )
 corp <- tm_map(corp, removeWords, myStopwords)
 #inspect a document as a check
 #Good practice to check every now and then
@@ -98,12 +98,6 @@ dtm <- removeSparseTerms(dtm,0.99)
 #Alternative way to check words for several documents:
 inspect(dtm[1:5,500:510])
 ```
-
-# Use the custom function for processing
-documents <- lapply(files, process_pdf_and_log)
-
-# Filter out NULLs returned for ignored files
-documents <- documents[!sapply(documents, is.null)]
 
 #Run LDA
 ```{r}
@@ -171,7 +165,7 @@ sort(topicProbabilities[x,])[k-1]/sort(topicProbabilities[x,])[k-2])
 kable(topic1ToTopic2) %>%
   kable_styling(bootstrap_options = c("condensed", "hover", "striped"), full_width = F, position ="center" )
 #manually set working directory, to specify where the files should be saved.
-setwd("C:\\Users\\cba\\OneDrive - Aalborg Universitet\\Papers\\Litterature Review\\Excel Filer")
+setwd("C:/Users/andyw/Documents/R/Scripts")
 if(index==1) {write.csv(files, file="document names.csv")}
 write.csv(as.matrix(unlist(topic1ToTopic2)),file=paste("Topics", k, "Topic1ToTopic2.csv"))
 write.csv(ldaOut.terms,file=paste("Topics", k, "Topic Overview.csv"))
