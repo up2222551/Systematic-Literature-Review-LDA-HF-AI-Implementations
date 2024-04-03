@@ -65,7 +65,7 @@ def perform_lda_and_save_distributions(processed_texts, output_folder, num_topic
 
         # Evaluate model coherence
         test_corpus = [dictionary.doc2bow(text[1]) for text in test_texts]
-        coherence_model = CoherenceModel(model=lda_model, texts=test_texts, dictionary=dictionary, coherence='c_v')
+        coherence_model = CoherenceModel(model=lda_model, texts=[text[1] for text in test_texts], dictionary=dictionary, coherence='c_v')
         coherence_scores.append(coherence_model.get_coherence())
 
         # Save document-topic distributions for the fold
