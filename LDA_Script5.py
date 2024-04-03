@@ -23,12 +23,12 @@ def preprocess_texts(documents):
     stop_words = stopwords.words('english')
     return [(doc[0], [word for word in simple_preprocess(doc[1]) if word not in stop_words]) for doc in documents]
 
-def save_topic_distributions(document_topics, fold_number, output_folder):
+def save_topic_distributions(document_topics_with_filenames, fold_number, output_folder):
     file_path = os.path.join(output_folder, f'topic_distributions_fold_{fold_number}.csv')
     with open(file_path, 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(['Filename', 'Document ID', 'Topic ID', 'Probability'])
-        for doc_id, (filename, topics) in enumerate(document_topics):  # Adjusted to include filename
+        for doc_id, (filename, topics) in enumerate(document_topics_with_filenames):  # Adjusted to include filename
             for topic_id, prob in topics:
                 writer.writerow([filename, doc_id, topic_id, prob])
 
@@ -50,6 +50,10 @@ def perform_lda_and_save_distributions(processed_texts, output_folder, num_topic
      # Adjust how train_texts and test_texts are created from processed_texts
         train_texts = [processed_texts[i][1] for i in train_index]  # Extract texts for training
         test_texts = [processed_texts[i] for i in test_index]  # Keep full tuple for test (to preserve filenames)
+        for item in test_texts:
+            assert isinstance(item, tuple) and len(item) == 2, "Each item in test_texts must be a tuple of length 2"
+            assert isinstance(item[0], str), "The first item of each tuple in test_texts should be a string (filename)"
+            assert isinstance(item[1], list), "The second item of each tuple in test_texts should be a list (tokenized words)"
 
 
         dictionary = corpora.Dictionary(train_texts)
@@ -69,8 +73,10 @@ def perform_lda_and_save_distributions(processed_texts, output_folder, num_topic
         coherence_scores.append(coherence_model.get_coherence())
 
         # Save document-topic distributions for the fold
-        document_topics = [lda_model.get_document_topics(bow) for bow in test_corpus]
-        save_topic_distributions(document_topics, fold + 1, output_folder)
+        # Assuming test_texts is structured as [(filename1, [words1]), (filename2, [words2]), ...]
+        document_topics_with_filenames = [(test_texts[i][0], lda_model.get_document_topics(test_corpus[i])) for i in range(len(test_texts))]
+
+        save_topic_distributions(document_topics_with_filenames, fold + 1, output_folder)
 
     # Save topic keywords for the entire corpus
     save_topic_keywords(lda_model, output_folder, num_words=10)
