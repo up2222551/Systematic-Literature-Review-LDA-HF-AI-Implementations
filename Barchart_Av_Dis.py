@@ -3,39 +3,51 @@ import matplotlib.pyplot as plt
 
 # Paths to your CSV files
 fold_csv_files = ['/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/4 topic distribution/topic_distributions_fold_1.csv', '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/4 topic distribution/topic_distributions_fold_2.csv', '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/4 topic distribution/topic_distributions_fold_3.csv', '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/4 topic distribution/topic_distributions_fold_4.csv', '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/4 topic distribution/topic_distributions_fold_5.csv']
-keywords_csv = '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/4 topic distribution/topic_keywords.csv'
 
-# Load and process each fold
-topic_counts = {}
+# Topic titles based on the provided mapping
+topic_titles = {
+    0: "Process and System Evaluation",
+    1: "Enhanced Data Analysis and Learning Models",
+    2: "Organisation and Performance in AI systems",
+    3: "Smart Data Management",
+    4: "Algorithmic Problem Solving",
+    5: "Cognitive Aspects of Human-AI Interaction",
+    6: "Socio Environment Aspects of Health",
+    7: "Human-Centred System Design",
+    8: "Technology and Health Research",
+    9: "Image Data Analysis"
+}
+
+# Load and aggregate the topic probabilities for each document across all folds
+doc_topic_prob = pd.DataFrame()
 
 for file in fold_csv_files:
-    df = pd.read_csv(file)
-    # Assuming the topic with the highest probability is the dominant topic for each document
-    dominant_topics = df.groupby('Document ID')['Probability'].idxmax()
-    dominant_topic_ids = df.loc[dominant_topics, 'Topic ID']
-    
-    for topic_id in dominant_topic_ids:
-        if topic_id not in topic_counts:
-            topic_counts[topic_id] = 0
-        topic_counts[topic_id] += 1
+    fold_df = pd.read_csv(file)
+    # Normalize probabilities within each document to ensure they sum to 1 across topics
+    fold_df['Normalized Probability'] = fold_df.groupby('Document ID')['Probability'].apply(lambda x: x / x.sum())
+    doc_topic_prob = doc_topic_prob.append(fold_df)
 
-# Load the keywords for each topic
-keywords_df = pd.read_csv(keywords_csv)
-keywords_df.set_index('Topic ID', inplace=True)
+# Calculate the mean probability for each document-topic pair
+mean_prob = doc_topic_prob.groupby(['Document ID', 'Topic ID'])['Normalized Probability'].mean().reset_index()
 
-# Create a new DataFrame for the bar chart data
-bar_chart_data = pd.DataFrame(list(topic_counts.items()), columns=['Topic ID', 'Document Count']).set_index('Topic ID')
-bar_chart_data['Keywords'] = keywords_df.loc[bar_chart_data.index]['Keywords']
+# Determine the dominant topic for each document
+dominant_topics = mean_prob.loc[mean_prob.groupby('Document ID')['Normalized Probability'].idxmax()]
+
+# Count how many documents belong to each topic
+topic_counts = dominant_topics['Topic ID'].value_counts().reset_index()
+topic_counts.columns = ['Topic ID', 'Document Count']
+
+# Map topic IDs to titles
+topic_counts['Topic Title'] = topic_counts['Topic ID'].map(topic_titles)
 
 # Sort by the number of documents per topic
-bar_chart_data.sort_values('Document Count', ascending=False, inplace=True)
+topic_counts.sort_values('Document Count', ascending=False, inplace=True)
 
 # Plotting
 plt.figure(figsize=(12, 8))
-plt.bar(bar_chart_data['Keywords'], bar_chart_data['Document Count'], color='skyblue')
-plt.xlabel('Topics (Keywords)', fontsize=14)
-plt.ylabel('Number of Documents', fontsize=14)
-plt.xticks(rotation=45, ha='right', fontsize=12)
+plt.barh(topic_counts['Topic Title'], topic_counts['Document Count'], color='skyblue')
+plt.xlabel('Number of Documents', fontsize=14)
+plt.ylabel('Topics', fontsize=14)
 plt.title('Topic Distribution Across All Documents', fontsize=16)
 plt.tight_layout()
 plt.show()
