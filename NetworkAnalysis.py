@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from itertools import combinations
 
 # Assuming the merged data is saved as 'merged_topic_data.csv' in your topic distribution folder
-merged_data_path = '/path/to/your/topic_distribution_folder/merged_topic_data.csv'
+merged_data_path = '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/4 topic distribution/merged_topic_data.csv'
 merged_df = pd.read_csv(merged_data_path)
 
 # Step 1: Calculate Co-occurrence
