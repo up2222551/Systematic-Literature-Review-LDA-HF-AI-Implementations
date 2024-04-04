@@ -2,8 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Paths to your CSV files
-fold_csv_files = ['path_to_fold1.csv', 'path_to_fold2.csv', 'path_to_fold3.csv', 'path_to_fold4.csv', 'path_to_fold5.csv']
-keywords_csv = 'path_to_keywords.csv'
+fold_csv_files = ['/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/4 topic distribution/topic_distributions_fold_1.csv', '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/4 topic distribution/topic_distributions_fold_2.csv', '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/4 topic distribution/topic_distributions_fold_3.csv', '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/4 topic distribution/topic_distributions_fold_4.csv', '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/4 topic distribution/topic_distributions_fold_5.csv']
+keywords_csv = '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/4 topic distribution/topic_keywords.csv'
 
 # Load and process each fold
 topic_counts = {}
