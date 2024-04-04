@@ -2,8 +2,8 @@ import pandas as pd
 import os
 
 # File paths
-metadata_path = '/path/to/your/metadata_summary.csv'
-topic_dist_folder = '/path/to/your/topic_distribution_folder'
+metadata_path = '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/2 text output/metadata_summary.csv'
+topic_dist_folder = '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/4 topic distribution'
 
 # Read the metadata file
 metadata_df = pd.read_csv(metadata_path)
