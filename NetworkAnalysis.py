@@ -20,7 +20,7 @@ co_occurrence_counts[['Topic 1', 'Topic 2']] = pd.DataFrame(co_occurrence_counts
 co_occurrence_counts.drop('Topic Pair', axis=1, inplace=True)
 
 # Exporting co-occurrence data to CSV
-co_occurrence_csv_path = '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/7 network analysis'
+co_occurrence_csv_path = '/Users/andy/Documents/Systemic Review LDA Analysis 2024/SLR-LDA-HF-AI/7 network analysis/networkanalysis.csv'
 co_occurrence_counts.to_csv(co_occurrence_csv_path, index=False)
 print(f"Co-occurrence data saved to: {co_occurrence_csv_path}")
 
